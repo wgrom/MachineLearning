@@ -111,14 +111,15 @@ def indicator(xVec, yVec, supportVec):
     result =0
     for a in range(len(supportVec)):
         alphaData, targetData, testData = supportVec[a]
-        bScalar = threshold_value(supportVec,xVec)
-        result += alphaData * targetData*kernel(testData,xVec)
+        result += alphaData * targetData*kernel(testData, (xVec,yVec),c)
+    bScalar = threshold_value(supportVec,(xVec,yVec))
     result = result - bScalar
     return result
 
 def threshold_value(supportVectors,x):
-    b=[numpy.sum(supportVectors[i][0]*supportVectors[i][1]*kernel(supportVectors[0][2],x[i],c)-supportVectors[0][1]) 
-    for i in range(len(supportVectors))]
+    b = 0
+    b = numpy.sum([(supportVectors[i][0]*supportVectors[i][1]*kernel(supportVectors[0][2],x,c)) for i in range(len(supportVectors))])
+    b = b - supportVectors[0][1]
     return b
 
 # plotting:
