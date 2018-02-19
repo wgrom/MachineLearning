@@ -90,7 +90,7 @@ def objective(alpha):
     v = numpy.zeros((N,N))
     for a in  range(N):
         for b in range(N):
-            v[a,b]= 1/2*numpy.dot(alpha[a],alpha[b])*P[a,b]
+            v[a,b]= (1/2)*alpha[a]*alpha[b]*P[a,b]
     return numpy.sum(v)-numpy.sum(alpha)
     
 def zerofun(alpha):
@@ -122,48 +122,32 @@ def threshold_value(supportVectors,x):
     b = b - supportVectors[0][1]
     return b
 
-# plotting:
-def disp(ClassA,ClassB):
-    plt.plot([p[0] for p in classA ] ,
-             [p[1] for p in classA], 
-             'b.') 
-    plt.plot([p[0] for p in classB ] ,
-             [p[1] for p in classB], 
-             'r.')
-    plt.axis('equal') # Force same scale on both axes 
-    #plt.savefig(’svmplot.pdf’) # Save a copy in a file 
-    plt.show() # Show the plot on the screen 
-
-
 
 # ================================================== #
 # Main Program
 # ================================================== #    
     
-def run():
+#def run():
         
-    GeneratingData()
-    disp(classA,classB)
-    # Parameters for minimize
-    start = numpy.zeros(N)
-    C=1
-    B = [(0, None) for b in range(N)]
-    XC={'type': 'eq', 'fun':zerofun}
-    
-    
-    FormingP(targets,inputs)
-    
-    ret = minimize( objective , start , bounds=B, constraints=XC)
-    alpha = ret['x']
-    #solution = ret['success']
-    
-    supportVec = extractSupportVectors(inputs,targets,alpha)
-    
-    dispBoundaries(supportVec)
+GeneratingData()
+disp(classA,classB)
+
+# Parameters for minimize
+start = numpy.zeros(N)
+C=1
+B = [(0, C) for b in range(N)]
+XC={'type': 'eq', 'fun':zerofun}
 
 
+FormingP(targets,inputs)
 
+ret = minimize( objective , start , bounds=B, constraints=XC)
+alpha = ret['x']
+#solution = ret['success']
 
+supportVec = extractSupportVectors(inputs,targets,alpha)
+
+dispBoundaries(supportVec)
 
 
     
