@@ -85,7 +85,10 @@ def FormingP(t,x):
     P =numpy.zeros((N,N))    # Initialization of Matrix
     for a in range(N):
         for b in range(N):
+<<<<<<< HEAD
             P[a,b] = t[a]*t[b]*kernel(x[a],x[b],c) #1 is for kernel selection
+=======
+>>>>>>> e43c5cf48207627089fd40ac6b78b8af8407ee87
     
 def objective(alpha):
     v = numpy.zeros((N,N))
@@ -123,11 +126,60 @@ def threshold_value(supportVectors,x):
     for i in range(len(supportVectors))]
     return b
 
+# plotting:
+def disp(ClassA,ClassB):
+    plt.plot([p[0] for p in classA ] ,
+             [p[1] for p in classA], 
+             'b.') 
+    plt.plot([p[0] for p in classB ] ,
+             [p[1] for p in classB], 
+             'r.')
+    plt.axis('equal') # Force same scale on both axes 
+    #plt.savefig(’svmplot.pdf’) # Save a copy in a file 
+    plt.show() # Show the plot on the screen 
 
+# ================================================== #
+# Preparing the Data
+# ================================================== #
+
+# set seed for testing:
+numpy.random.seed(100) 
+## Creating Inputs
+classA = numpy.concatenate( 
+        (numpy.random.randn(10, 2) * 0.2 + [1.5, 0.5],
+         numpy.random.randn(10, 2) * 0.2 + [-1.5, 0.5])) 
+classB = numpy.random.randn(20, 2) * 0.2 + [0.0 , -0.5]
+ 
+inputs = numpy.concatenate (( classA , classB )) 
+
+targets = numpy.concatenate (
+        (numpy.ones(classA.shape[0]) , 
+         -numpy.ones(classB.shape[0])))
+ 
+# Number of rows (samples)
+global N 
+N = inputs.shape[0] 
+ 
+# reorder the samples ramdomly
+permute= list(range(N)) 
+random.shuffle(permute) 
+inputs = inputs[ permute , : ]
+targets = targets[ permute ]
+
+#Start values for alfa vector
+#N - number of training samples, each has corresp. alfa
+start = numpy.zeros(N)
+ 
+# list of pairs as long as alfa
+C=1
+bounds = [(0, C) for b in range(N)]
+# XC equality constraint of (10)
+#constraint={'type': eq, 'fun':zerofun}
 
 
 # ================================================== #
 # Main Program
+<<<<<<< HEAD
 # ================================================== #    
 def run():
         
@@ -149,6 +201,13 @@ def run():
     supportVec = extractSupportVectors(inputs,targets,alpha)
     
     dispBoundaries(supportVec)
+=======
+# ================================================== #   
+
+#def minimize( objective , start , bounds=B, constraints=XC):
+#    alpha = ret['x']    
+#    solution = ret['success']
+>>>>>>> e43c5cf48207627089fd40ac6b78b8af8407ee87
 
 
 
