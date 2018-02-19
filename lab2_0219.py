@@ -39,15 +39,16 @@ inputs = inputs[ permute , : ]
 targets = targets[ permute ]
  
 # plotting:
-plt.plot([p[0] for p in classA ] ,
-         [p[1] for p in classA], 
-         'b.') 
-plt.plot([p[0] for p in classB ] ,
-         [p[1] for p in classB], 
-         'r.')
-plt.axis('equal') # Force same scale on both axes 
-#plt.savefig(’svmplot.pdf’) # Save a copy in a file 
-plt.show() # Show the plot on the screen 
+def disp(ClassA,ClassB):
+    plt.plot([p[0] for p in classA ] ,
+             [p[1] for p in classA], 
+             'b.') 
+    plt.plot([p[0] for p in classB ] ,
+             [p[1] for p in classB], 
+             'r.')
+    plt.axis('equal') # Force same scale on both axes 
+    #plt.savefig(’svmplot.pdf’) # Save a copy in a file 
+    plt.show() # Show the plot on the screen 
 
  
 
