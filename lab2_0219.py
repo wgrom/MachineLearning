@@ -38,26 +38,6 @@ def GeneratingData():
     inputs = inputs[ permute , : ]
     targets = targets[ permute ]
  
-# plotting:
-def disp(ClassA,ClassB):
-    plt.plot([p[0] for p in classA ] ,
-             [p[1] for p in classA], 
-             'b.') 
-    plt.plot([p[0] for p in classB ] ,
-             [p[1] for p in classB], 
-             'r.')
-    plt.axis('equal') # Force same scale on both axes 
-    #plt.savefig(’svmplot.pdf’) # Save a copy in a file 
-    plt.show() # Show the plot on the screen 
-    
-    
-def dispBoundaries(supportVec):
-    xgrid=numpy.linspace(-5, 5) 
-    ygrid=numpy.linspace(-4, 4)
-    grid=numpy.array([[indicator(x, y,supportVec) for y in ygrid ] for x in xgrid])
-    plt.contour (xgrid , ygrid , grid , (-1.0, 0.0, 1.0),
-             colors=('red', 'black', 'blue'), linewidths=(1, 3, 1))
-
  
 
 # ================================================== #
@@ -68,8 +48,7 @@ def dispBoundaries(supportVec):
 
 
 ## Functions
-global c
-c = 1
+
 def kernel(x,y,c): 
     if c == 1: # linear
         return numpy.dot(x,y)
@@ -82,21 +61,20 @@ def kernel(x,y,c):
 def FormingP(t,x):
     global P
     P =numpy.zeros((N,N))    # Initialization of Matrix
-    for a in range(N):
-        for b in range(N):
-            P[a,b] = t[a]*t[b]*kernel(x[a],x[b],c) #1 is for kernel selection
+    for i in range(N):
+        for j in range(N):
+            P[i,j] = t[i]*t[j]*kernel(x[i],x[j],c)
     
 def objective(alpha):
-    v = numpy.zeros((N,N))
-    for a in  range(N):
-        for b in range(N):
-            v[a,b]= 1/2*numpy.dot(alpha[a],alpha[b])*P[a,b]
-    return numpy.sum(v)-numpy.sum(alpha)
+    v = 0
+    for i in  range(N):
+        for j in range(N):
+            v += 1/2*numpy.dot(alpha[i],alpha[j])*P[i,j]
+    return v - numpy.sum(alpha)
     
 def zerofun(alpha):
     v = 0
-    for a in range(N):
-        v += numpy.dot(alpha[a],targets[a])
+    v = numpy.sum([alpha[a]*targets[a] for a in range(N)])
     return v
 
 threshold = 0.00001
@@ -118,7 +96,7 @@ def indicator(xVec, yVec, supportVec):
 
 def threshold_value(supportVectors,x):
     b = 0
-    b = numpy.sum([(supportVectors[i][0]*supportVectors[i][1]*kernel(supportVectors[0][2],x,c)) for i in range(len(supportVectors))])
+    b = numpy.sum([(supportVectors[i][0]*supportVectors[i][1]*kernel(x, supportVectors[0][2],c)) for i in range(len(supportVectors))])
     b = b - supportVectors[0][1]
     return b
 
@@ -131,9 +109,26 @@ def disp(ClassA,ClassB):
              [p[1] for p in classB], 
              'r.')
     plt.axis('equal') # Force same scale on both axes 
+    plt.xlim((-2,2))
+    plt.ylim((-2,2))
     #plt.savefig(’svmplot.pdf’) # Save a copy in a file 
     plt.show() # Show the plot on the screen 
 
+def dispBoundaries(supportVec):
+    xgrid=numpy.linspace(-5, 5) 
+    ygrid=numpy.linspace(-4, 4)
+    grid = numpy.zeros((len(xgrid),len(ygrid)))
+    grid =([[indicator(x,y , supportVec) for x in xgrid ] for y in ygrid]) # here I changed the way they create the matrix
+    plt.contour (xgrid , ygrid , grid , (-1.0, 0.0, 1.0),
+             colors=('red', 'black', 'blue'), linewidths=(1, 3, 1))
+    plt.plot([p[0] for p in classA ] ,
+             [p[1] for p in classA], 
+             'b.') 
+    plt.plot([p[0] for p in classB ] ,
+             [p[1] for p in classB], 
+             'r.')
+    plt.xlim((-2,2))
+    plt.ylim((-2,2))
 
 
 # ================================================== #
@@ -141,12 +136,14 @@ def disp(ClassA,ClassB):
 # ================================================== #    
     
 def run():
+    global c
+    c = 1
         
     GeneratingData()
-    disp(classA,classB)
+    #disp(classA,classB)
     # Parameters for minimize
     start = numpy.zeros(N)
-    C=1
+    C=750
     B = [(0, None) for b in range(N)]
     XC={'type': 'eq', 'fun':zerofun}
     
