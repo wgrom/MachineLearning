@@ -64,14 +64,19 @@ def FormingP(t,x):
     for i in range(N):
         for j in range(N):
             P[i,j] = t[i]*t[j]*kernel(x[i],x[j],c)
+    return P
     
+#def objective(alpha):
+#    v = 0
+#    for i in  range(N):
+#        for j in range(N):
+#            v += 1/2*numpy.dot(alpha[i],alpha[j])*P[i,j]
+#    return v - numpy.sum(alpha)
+
 def objective(alpha):
-    v = 0
-    for i in  range(N):
-        for j in range(N):
-            v += 1/2*numpy.dot(alpha[i],alpha[j])*P[i,j]
+    v = 1/2 * numpy.sum( numpy.dot(alpha , alpha) * P )
     return v - numpy.sum(alpha)
-    
+
 def zerofun(alpha):
     v = 0
     v = numpy.sum([alpha[a]*targets[a] for a in range(N)])
@@ -89,16 +94,17 @@ def indicator(xVec, yVec, supportVec):
     result =0
     for a in range(len(supportVec)):
         alphaData, targetData, testData = supportVec[a]
-        result += alphaData * targetData*kernel(testData, (xVec,yVec),c)
+        result += alphaData * targetData * kernel(testData, (xVec,yVec),c)
     bScalar = threshold_value(supportVec,(xVec,yVec))
     result = result - bScalar
     return result
 
 def threshold_value(supportVectors,x):
     b = 0
-    b = numpy.sum([(supportVectors[i][0]*supportVectors[i][1]*kernel(x, supportVectors[0][2],c)) for i in range(len(supportVectors))])
-    b = b - supportVectors[0][1]
-    return b
+    b = numpy.sum([(supportVectors[i][0] * supportVectors[i][1] * kernel(x, supportVectors[0][2],c)) 
+    for i in range(len(supportVectors))])
+        b = b - supportVectors[0][1]
+    return b￼
 
 # plotting:
 def disp(ClassA,ClassB):
