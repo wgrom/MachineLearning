@@ -129,37 +129,33 @@ def dispBoundaries(supportVec):
              'r.')
     plt.xlim((-2,2))
     plt.ylim((-2,2))
+    plt.show()
 
 
 # ================================================== #
 # Main Program
 # ================================================== #    
+global c
+c = 1
     
-def run():
-    global c
-    c = 1
-        
-    GeneratingData()
-    #disp(classA,classB)
-    # Parameters for minimize
-    start = numpy.zeros(N)
-    C=750
-    B = [(0, None) for b in range(N)]
-    XC={'type': 'eq', 'fun':zerofun}
-    
-    
-    FormingP(targets,inputs)
-    
-    ret = minimize( objective , start , bounds=B, constraints=XC)
-    alpha = ret['x']
-    #solution = ret['success']
-    
-    supportVec = extractSupportVectors(inputs,targets,alpha)
-    
-    dispBoundaries(supportVec)
+GeneratingData()
+#disp(classA,classB)
+# Parameters for minimize
+start = numpy.zeros(N)
+C=750
+B = [(0, None) for b in range(N)]
+XC={'type': 'eq', 'fun':zerofun}
 
 
+FormingP(targets,inputs)
 
+ret = minimize( objective , start , bounds=B, constraints=XC)
+alpha = ret['x']
+#solution = ret['success']
+
+supportVec = extractSupportVectors(inputs,targets,alpha)
+
+dispBoundaries(supportVec)
 
 
 
