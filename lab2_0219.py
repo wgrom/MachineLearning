@@ -15,14 +15,14 @@ import matplotlib.pyplot as plt
 
 def GeneratingData():
     # set seed for testing:
-    numpy.random.seed(100)
+    #numpy.random.seed(100)
      
     ## Creating Input
     global classA, classB, inputs,targets
     classA = numpy.concatenate( 
             (numpy.random.randn(10, 2) * 0.2 + [1.5, 0.5],
              numpy.random.randn(10, 2) * 0.2 + [-1.5, 0.5])) 
-    classB = numpy.random.randn(20, 2) * 0.2 + [0.0 , -0.5]
+    classB = numpy.random.randn(20, 2) * 0.2 + [0.0 , 0.5]
     inputs = numpy.concatenate (( classA , classB )) 
     targets = numpy.concatenate (
             (numpy.ones(classA.shape[0]) , 
@@ -56,7 +56,8 @@ def kernel(x,y,c):
         return math.pow(numpy.dot(x,y)+1,2)
     elif c == 3: #radial
         param = 0.01
-        return math.exp**(math.pow(numpy.linalg.norm(x-y),2)/(2*math.pow(param,2)))
+        explicitEuclidian=numpy.linalg.norm((x[0]-y[0],x[1]-y[1]))
+        return math.exp(-math.pow(explicitEuclidian,2)/(2*math.pow(param,2)))
 
 def FormingP(t,x):
     global P
@@ -136,7 +137,7 @@ def dispBoundaries(supportVec):
 # Main Program
 # ================================================== #    
 global c
-c = 1
+c = 3
     
 GeneratingData()
 #disp(classA,classB)
@@ -151,11 +152,13 @@ FormingP(targets,inputs)
 
 ret = minimize( objective , start , bounds=B, constraints=XC)
 alpha = ret['x']
+
 #solution = ret['success']
 
 supportVec = extractSupportVectors(inputs,targets,alpha)
 
 dispBoundaries(supportVec)
+print(ret['success'])
 
 
 
