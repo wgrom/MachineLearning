@@ -22,7 +22,7 @@ def GeneratingData():
     classA = numpy.concatenate( 
             (numpy.random.randn(10, 2) * 0.2 + [1.5, 0.5],
              numpy.random.randn(10, 2) * 0.2 + [-1.5, 0.5])) 
-    classB = numpy.random.randn(20, 2) * 0.2 + [0.0 , -0.5]
+    classB = numpy.random.randn(20, 2) * 0.2 + [0.0 , 0.25]
     inputs = numpy.concatenate (( classA , classB )) 
     targets = numpy.concatenate (
             (numpy.ones(classA.shape[0]) , 
@@ -53,9 +53,10 @@ def kernel(x,y,c):
     if c == 1: # linear
         return numpy.dot(x,y)
     elif c == 2: # polynomial
-        return math.pow(numpy.dot(x,y)+1,2)
+        p=3
+        return math.pow(numpy.dot(x,y)+1,p)
     elif c == 3: #radial
-        param = 0.01
+        param = 0.5
         explicitEuclidian=numpy.linalg.norm((x[0]-y[0],x[1]-y[1]))
         return math.exp(-math.pow(explicitEuclidian,2)/(2*math.pow(param,2)))
 
@@ -93,17 +94,16 @@ def extractSupportVectors(testdata, targetdata, alphaValues):
 
 def indicator(xVec, yVec, supportVec):
     result =0
-    for a in range(len(supportVec)):
-        alphaData, targetData, testData = supportVec[a]
-        result += alphaData * targetData * kernel(testData, (xVec,yVec),c)
-    bScalar = threshold_value(supportVec,(xVec,yVec))
+    result = numpy.sum([ supportVec[i][0]*supportVec[i][1]*kernel(supportVec[i][2],(xVec, yVec),c) 
+                    for i in range(len(supportVec))])
+    bScalar = threshold_value(supportVec)
     result = result - bScalar
     return result
 
-def threshold_value(supportVectors,x):
+def threshold_value(supportVectors):
     b = 0
-    b = numpy.sum([ supportVectors[i][0]*supportVectors[i][1]*kernel(x, supportVectors[0][2],c) - supportVectors[i][1] 
-                    for i in range(len(supportVectors))])
+    b = numpy.sum([ supportVectors[i][0]*supportVectors[i][1]*kernel(supportVectors[0][2],supportVectors[i][2],c) 
+                    for i in range(len(supportVectors))]) - supportVectors[0][1]
     return b
 
 # plotting:
@@ -123,11 +123,11 @@ def disp(ClassA,ClassB):
 def dispBoundaries(supportVec):
     xgrid=numpy.linspace(-5, 5) 
     ygrid=numpy.linspace(-4, 4)
-    grid = numpy.zeros((len(xgrid),len(ygrid)))
-    grid =([[indicator(x,y,supportVec) for x in xgrid ] for y in ygrid]) # here I changed the way they create the matrix
+    grid = numpy.array([[indicator(x,y,supportVec) for x in xgrid ] for y in ygrid]) # here I changed the way they create the matrix
+                
     plt.figure(figsize=(12,6))
     plt.contour (xgrid , ygrid , grid , (-1.0, 0.0, 1.0),
-             colors=('red', 'black', 'blue'), linewidths=(1, 3, 1))
+             colors=('red', 'black', 'blue'), linewidths=(1, 5, 1))
     plt.plot([p[0] for p in classA ] ,
              [p[1] for p in classA], 
              'b.') 
@@ -145,31 +145,29 @@ def dispBoundaries(supportVec):
 # ================================================== #
 # Main Program
 # ================================================== #    
-
-global c
-c = 1
+def run()
+    global c
+    c = 3
+        
+    GeneratingData()
+    start = numpy.zeros(N)
+    C=0.5
+    B = [(0, C) for b in range(N)]
+    XC={'type': 'eq', 'fun':zerofun}
     
-GeneratingData()
-#disp(classA,classB)
-# Parameters for minimize
-start = numpy.zeros(N)
-C=750
-B = [(0, None) for b in range(N)]
-XC={'type': 'eq', 'fun':zerofun}
-
-
-FormingP(targets,inputs)
-
-ret = minimize( objective , start , bounds=B, constraints=XC)
-alpha = ret['x']
-
-supportVec = extractSupportVectors(inputs,targets,alpha)
-
-dispBoundaries(supportVec)
-
-
-
-print(ret['success'])
+    
+    FormingP(targets,inputs)
+    
+    ret = minimize( objective , start , bounds=B, constraints=XC)
+    alpha = ret['x']
+    
+    supportVec = extractSupportVectors(inputs,targets,alpha)
+    
+    dispBoundaries(supportVec)
+    
+    
+    
+    print(ret['success'])
 
 
 
