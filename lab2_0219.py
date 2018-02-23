@@ -13,16 +13,16 @@ import matplotlib.pyplot as plt
 # Preparing the Data and Plot
 # ================================================== #
 
-def GeneratingData():
+def GeneratingData(Amean1,Amean2,Bmean,Stdev):
     # set seed for testing:
     #numpy.random.seed(100)
      
     ## Creating Input
     global classA, classB, inputs,targets
     classA = numpy.concatenate( 
-            (numpy.random.randn(10, 2) * 0.2 + [1.5, 0.5],
-             numpy.random.randn(10, 2) * 0.2 + [-1.5, 0.5])) 
-    classB = numpy.random.randn(20, 2) * 0.2 + [0.0 , 0.5]
+            (numpy.random.randn(10, 2) * Stdev + Amean1,
+             numpy.random.randn(10, 2) * Stdev + Amean2)) 
+    classB = numpy.random.randn(20, 2) * Stdev + Bmean
     inputs = numpy.concatenate (( classA , classB )) 
     targets = numpy.concatenate (
             (numpy.ones(classA.shape[0]) , 
@@ -53,9 +53,8 @@ def kernel(x,y,c):
     if c == 1: # linear
         return numpy.dot(x,y)
     elif c == 2: # polynomial
-        return math.pow(numpy.dot(x,y)+1,2)
+        return math.pow(numpy.dot(x,y)+1,power)
     elif c == 3: #radial
-        param = 0.01
         explicitEuclidian=numpy.linalg.norm((x[0]-y[0],x[1]-y[1]))
         return math.exp(-math.pow(explicitEuclidian,2)/(2*math.pow(param,2)))
 
@@ -65,17 +64,9 @@ def FormingP(t,x):
     for i in range(N):
         for j in range(N):
             P[i,j] = t[i]*t[j]*kernel(x[i],x[j],c)
-    return P
-    
-#def objective(alpha):
-#    v = 0
-#    for i in  range(N):
-#        for j in range(N):
-#            v += 1/2*numpy.dot(alpha[i],alpha[j])*P[i,j]
-#    return v - numpy.sum(alpha)
 
 def objective(alpha):
-    v = 1/2 * numpy.sum( numpy.dot(alpha , alpha) * P )
+    v = 1/2 * numpy.transpose(alpha) @ P @ alpha  #@ for matrix mult
     return v - numpy.sum(alpha)
 
 def zerofun(alpha):
@@ -96,16 +87,17 @@ def indicator(xVec, yVec, supportVec):
     for a in range(len(supportVec)):
         alphaData, targetData, testData = supportVec[a]
         result += alphaData * targetData * kernel(testData, (xVec,yVec),c)
-    bScalar = threshold_value(supportVec,(xVec,yVec))
+    bScalar = threshold_value(supportVec)
     result = result - bScalar
     return result
 
-def threshold_value(supportVectors,x):
+def threshold_value(supportVectors):
     b = 0
-    b = numpy.sum([(supportVectors[i][0] * supportVectors[i][1] * kernel(x, supportVectors[0][2],c)) 
-    for i in range(len(supportVectors))])
-        b = b - supportVectors[0][1]
-    return b￼
+    b = numpy.sum([(supportVectors[i][0] * supportVectors[i][1] * 
+                    kernel(supportVectors[0][2], supportVectors[i][2],c)) for i in range(len(supportVectors))])
+                     #x-Vec (x,y coords) of          #support vec
+    b = b - supportVectors[0][1] #
+    return b
 
 # plotting:
 def disp(ClassA,ClassB):
@@ -125,7 +117,7 @@ def dispBoundaries(supportVec):
     xgrid=numpy.linspace(-5, 5) 
     ygrid=numpy.linspace(-4, 4)
     grid = numpy.zeros((len(xgrid),len(ygrid)))
-    grid =([[indicator(x,y , supportVec) for x in xgrid ] for y in ygrid]) # here I changed the way they create the matrix
+    grid = numpy.array([[indicator(x,y , supportVec) for x in xgrid ] for y in ygrid]) # here I changed the way they create the matrix
     plt.contour (xgrid , ygrid , grid , (-1.0, 0.0, 1.0),
              colors=('red', 'black', 'blue'), linewidths=(1, 3, 1))
     plt.plot([p[0] for p in classA ] ,
@@ -142,34 +134,78 @@ def dispBoundaries(supportVec):
 # ================================================== #
 # Main Program
 # ================================================== #    
-global c
-c = 3
+
     
-GeneratingData()
 #disp(classA,classB)
 # Parameters for minimize
-start = numpy.zeros(N)
-C=750
-B = [(0, None) for b in range(N)]
-XC={'type': 'eq', 'fun':zerofun}
+
+def run(Slack,kernel,pw,pm): 
+    global c, power, param  #Kernel case (1,2,3); power for K2 and param for K3
+    c=kernel
+    power=pw
+    param=pm
+    start = numpy.zeros(N)
+    B = [(0, Slack) for b in range(N)]
+    XC={'type': 'eq', 'fun':zerofun}
+    
+    FormingP(targets,inputs)
+    
+    ret = minimize( objective , start , bounds=B, constraints=XC)
+    alpha = ret['x']
+    
+    #solution = ret['success']
+    
+    supportVec = extractSupportVectors(inputs,targets,alpha)
+    dispBoundaries(supportVec)
+    print(ret['success'])
 
 
-FormingP(targets,inputs)
-
-ret = minimize( objective , start , bounds=B, constraints=XC)
-alpha = ret['x']
-
-#solution = ret['success']
-
-supportVec = extractSupportVectors(inputs,targets,alpha)
-
-dispBoundaries(supportVec)
-print(ret['success'])
-
-
+GeneratingData([1.5, 0.5], [-1.5, 0.5], [0.0 , -0.5], 0.2) #A mean1 , A mean 2, B mean, std
+run(750,1,2,0.01) #optimize and slack, power 2, param 0.01
 
     
+# ================================================== #
+# EXploring
+# ================================================== #    
+
+#1.
+GeneratingData([1.5, 0.5], [-1.5, 0.5], [0.0 , 0.0], 0.2) 
+run(100,1,2,0.01)
+
+GeneratingData([1.5, 0.5], [-1.5, 0.5], [0.0 , 0.3], 0.2) 
+run(100,1,2,0.01)
+
+#No slack and a lot of errors make the optimizer fail
+GeneratingData([1.5, 0.5], [-1.5, 0.5], [0.0 , 0.7], 0.2) 
+run(700,1,2,0.01)
 
 
+#2.
+GeneratingData([1.5, 0.5], [-1.5, 0.5], [0.0 , -0.5], 0.2) #A mean1 , A mean 2, B mean, std
+run(750,2,2,0.01)
+run(750,3,2,1)
 
+#3.
+GeneratingData([1.5, 0.5], [-1.5, 0.5], [0.0 , 0.7], 0.2) 
+run(750,2,2,0.01)
+#increasing power
+run(750,2,3,0.01)
+run(750,2,4,0.01)
 
+#Radial:
+run(700,3,2,1)
+#Bad solution, small sigma
+run(700,3,2,0.01)
+
+#4.
+GeneratingData([1.5, 0.5], [-1.5, 0.5], [0.0 , 0.2], 0.2) 
+#low slack works, producing a bad solution in case of dataset overlap
+run(100,1,2,0.01)
+#high slack doesnt
+run(900,1,2,0.01)
+
+#5.
+#More Slack:
+#higher complexity:
+
+#Check with ROC curve, how the separation is performing.
