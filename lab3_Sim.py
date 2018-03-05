@@ -32,12 +32,14 @@ import math
 # NOTE: you do not need to handle the W argument for this part!
 # in: labels - N vector of class labels
 # out: prior - C x 1 vector of class priors
-def computePrior(labels, W=None):
+def computePrior(labels, W):
     Npts = labels.shape[0]
     if W is None:
         W = np.ones((Npts,1))/Npts
+        flag = 1
     else:
         assert(W.shape[0] == Npts)
+        flag = 0
     classes = np.unique(labels)
     Nclasses = np.size(classes)
 
@@ -45,10 +47,11 @@ def computePrior(labels, W=None):
 
     # TODO: compute the values of prior for each class!
     # ==========================
-    idx = np.zeros((Npts,Nclasses))
-    for jdx, clas in enumerate(classes):
-        # idx[:,clas] = labels==clas #just to show something
-        prior[clas] = sum(labels==clas) /(Npts)
+    if flag is 1:
+        for jdx, clas in enumerate(classes):
+            prior[clas] = sum(labels==clas) /(Npts)
+    elif flag is 0:
+            prior[clas] = sum(W[labels==clas])
     # ==========================
 
     return prior
@@ -63,16 +66,19 @@ def mlParams(X, labels, W):
     Npts,Ndims = np.shape(X)
     classes = np.unique(labels)
     Nclasses = np.size(classes)
+    flag = 0
 
     if W is None:
         W = np.ones((Npts,1))/float(Npts)
+        flag = 1
+        
 
     mu = np.zeros((Nclasses,Ndims))
     sigma = np.zeros((Nclasses,Ndims,Ndims))
 
     # TODO: fill in the code to compute mu and sigma!
     # ==========================
-    if W is None:
+    if flag is 1:
         mu = np.zeros((Nclasses,Ndims))
         sigma1 = np.zeros((Nclasses,Ndims))
         sigma  = np.zeros((Nclasses,Ndims,Ndims))
@@ -80,14 +86,14 @@ def mlParams(X, labels, W):
             mu[clas,:] = np.mean(X[labels==clas],0) #average by col
             sigma1[clas,:] = np.sum(np.power(X[labels==clas]-mu[clas,:],2)/ X[labels==clas].shape[0],0)
             sigma[clas,:,:] = np.diag(sigma1[clas,:])
-    else:
+    elif flag is 0:
         mu = np.zeros((Nclasses,Ndims))
         sigma1 = np.zeros((Nclasses,Ndims))
         sigma  = np.zeros((Nclasses,Ndims,Ndims))
         for jdx, clas in enumerate(classes):
             position = labels == clas
-            mu[clas,:] = np.sum(W[position]*X[position])/np.sum(W[position])
-            sigma1[clas,:] = np.sum(W[position]*np.power(X[labels==clas]-mu[clas,:],2))/np.sum(W)
+            mu[clas,:] = np.sum(W[position]*X[position], axis=0)/np.sum(W[position])
+            sigma1[clas,:] = np.sum(W[position]*np.power(X[position]-mu[clas,:],2),axis=0)/np.sum(W[position])
             sigma[clas,:,:] = np.diag(sigma1[clas,:])
                     
         #sigma[clas,:] = sum(np.power(X[labels==clas]-np.array(mu[[clas,],]*len(X[labels==clas])),2))/len(X[labels==clas])
@@ -150,7 +156,9 @@ class BayesClassifier(object):
 # ## Test the Maximum Likelihood estimates
 # 
 # Call `genBlobs` and `plotGaussian` to verify your estimates.
-
+# ============================================
+#               Test Functions 
+# ============================================
 
 X, labels = genBlobs(centers=5)
 mu, sigma = mlParams(X,labels,W)
