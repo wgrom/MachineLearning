@@ -51,6 +51,7 @@ def computePrior(labels, W):
         for jdx, clas in enumerate(classes):
             prior[clas] = sum(labels==clas) /(Npts)
     elif flag is 0:
+        for jdx, clas in enumerate(classes):
             prior[clas] = sum(W[labels==clas])
     # ==========================
 
@@ -218,6 +219,11 @@ def trainBoost(base_classifier, X, labels, T=10):
         
     return classifiers, alphas
 
+def delta(vote,labels):
+    classes = np.unique(labels)
+    test = (vote==labels)*1
+        
+
 # in:       X - N x d matrix of N data points
 # classifiers - (maximum) length T Python list of trained classifiers as above
 #      alphas - (maximum) length T Python list of vote weights
@@ -236,7 +242,10 @@ def classifyBoost(X, classifiers, alphas, Nclasses):
         # TODO: implement classificiation when we have trained several classifiers!
         # here we can do it by filling in the votes vector with weighted votes
         # ==========================
-        
+        for a in range(Ncomps):
+            h = classifiers[a].classify(X)
+            for i in range(Npts):
+                votes[b, h[b]] += alphas[a]
         # ==========================
 
         # one way to compute yPred after accumulating the votes
