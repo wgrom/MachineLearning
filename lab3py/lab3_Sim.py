@@ -228,18 +228,16 @@ def trainBoost(base_classifier, X, labels, T=10):
         alpha = 0.5 * (math.log(1- Werror, math.e) - math.log(Werror, math.e)) # for each t in T
         
         #UPDATE Weights!
-        normFactor = 1/np.sum(wCur)
         trues = delta==1
         fails = delta==0
-        wCur[trues] = wCur[trues] * normFactor * math.exp(-alpha)
-        wCur[fails] = wCur[fails] * normFactor * math.exp(alpha)
+        wCur[trues] = wCur[trues]  * math.exp(-alpha)
+        wCur[fails] = wCur[fails]  * math.exp(alpha)
+        normFactor = 1/np.sum(wCur)
+        wCur = wCur*normFactor
 
         alphas.append(alpha) # you will need to append the new alpha
         # ==========================
 
-        
-        
-        
     return classifiers, alphas
 
 # in:       X - N x d matrix of N data points
@@ -262,7 +260,7 @@ def classifyBoost(X, classifiers, alphas, Nclasses):
         # ==========================
         for a in range(Ncomps):
             h = classifiers[a].classify(X)
-            for i in range(Npts):
+            for b in range(Npts):
                 votes[b, h[b]] += alphas[a]
         # ==========================
 
@@ -296,7 +294,7 @@ class BoostClassifier(object):
 # Call the `testClassifier` and `plotBoundary` functions for this part.
 
 
-#testClassifier(BoostClassifier(BayesClassifier(), T=10), dataset='iris',split=0.7)
+testClassifier(BoostClassifier(BayesClassifier(), T=10), dataset='iris',split=0.7)
 
 
 
