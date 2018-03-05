@@ -196,13 +196,15 @@ run(750,2,4,0.01)
 run(700,3,2,1)
 #Bad solution, small sigma
 run(700,3,2,0.01)
+#large sigma flattens out the curve
+run(750,3,4,100)
 
 #4.
 GeneratingData([1.5, 0.5], [-1.5, 0.5], [0.0 , 0.2], 0.2) 
 #low slack works, producing a bad solution in case of dataset overlap
 run(100,1,2,0.01)
 #high slack doesnt
-run(900,1,2,0.01)
+run(900,1,2,100)
 
 #5.
 #More Slack:
