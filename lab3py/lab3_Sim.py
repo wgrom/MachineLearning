@@ -165,25 +165,25 @@ class BayesClassifier(object):
 # ============================================
 #               Test Functions 
 # ============================================
-
-X, labels = genBlobs(centers=5)
-mu, sigma = mlParams(X,labels,W)
-plotGaussian(X,labels,mu,sigma)
-
-
-# Call the `testClassifier` and `plotBoundary` functions for this part.
-
-W = np.zeros((150,1))
-W[:] = 1/W.shape[0]
-testClassifier(BayesClassifier(), dataset='iris', split=0.7)
-
-plotBoundary(BayesClassifier(), dataset='irisX',split=0.7)
-
-
-
+#
+#X, labels = genBlobs(centers=5)
+#mu, sigma = mlParams(X,labels,W)
+#plotGaussian(X,labels,mu,sigma)
+#
+#
+## Call the `testClassifier` and `plotBoundary` functions for this part.
+#
+#W = np.zeros((150,1))
+#W[:] = 1/W.shape[0]
+#testClassifier(BayesClassifier(), dataset='iris', split=0.7)
+#
+plotBoundary(BayesClassifier(), dataset='iris',split=0.7)
+#
+#
+#
 testClassifier(BayesClassifier(), dataset='vowel', split=0.7)
 plotBoundary(BayesClassifier(), dataset='vowel',split=0.7)
-
+#
 
 
 
@@ -224,7 +224,7 @@ def trainBoost(base_classifier, X, labels, T=10):
         #DEFINE delta func to evaluate whether the classifier is right or not!
         delta = (vote==labels)*1
         
-        Werror = np.transpose(wCur) @ (1-delta)        
+        Werror = np.transpose(wCur) @ (1-delta) + 1e-15     
         alpha = 0.5 * (math.log(1- Werror, math.e) - math.log(Werror, math.e)) # for each t in T
         
         #UPDATE Weights!
@@ -295,10 +295,9 @@ class BoostClassifier(object):
 
 
 testClassifier(BoostClassifier(BayesClassifier(), T=10), dataset='iris',split=0.7)
+plotBoundary(BoostClassifier(BayesClassifier(), T=10), dataset='iris',split=0.7)
 
-
-
-#testClassifier(BoostClassifier(BayesClassifier(), T=10), dataset='vowel',split=0.7)
+testClassifier(BoostClassifier(BayesClassifier(), T=10), dataset='vowel',split=0.7)
 
 
 
@@ -308,27 +307,27 @@ testClassifier(BoostClassifier(BayesClassifier(), T=10), dataset='iris',split=0.
 # Now repeat the steps with a decision tree classifier.
 
 
-#testClassifier(DecisionTreeClassifier(), dataset='iris', split=0.7)
+testClassifier(DecisionTreeClassifier(), dataset='iris', split=0.7)
 
 
 
-#testClassifier(BoostClassifier(DecisionTreeClassifier(), T=10), dataset='iris',split=0.7)
+testClassifier(BoostClassifier(DecisionTreeClassifier(), T=10), dataset='iris',split=0.7)
 
 
 
-#testClassifier(DecisionTreeClassifier(), dataset='vowel',split=0.7)
+testClassifier(DecisionTreeClassifier(), dataset='vowel',split=0.7)
 
 
 
-#testClassifier(BoostClassifier(DecisionTreeClassifier(), T=10), dataset='vowel',split=0.7)
+testClassifier(BoostClassifier(DecisionTreeClassifier(), T=10), dataset='vowel',split=0.7)
 
 
 
-#plotBoundary(DecisionTreeClassifier(), dataset='iris',split=0.7)
+plotBoundary(DecisionTreeClassifier(), dataset='iris',split=0.7)
 
 
 
-#plotBoundary(BoostClassifier(DecisionTreeClassifier(), T=10), dataset='iris',split=0.7)
+plotBoundary(BoostClassifier(DecisionTreeClassifier(), T=10), dataset='iris',split=0.7)
 
 
 # ## Bonus: Visualize faces classified using boosted decision trees
