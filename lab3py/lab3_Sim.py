@@ -260,7 +260,10 @@ def classifyBoost(X, classifiers, alphas, Nclasses):
         # TODO: implement classificiation when we have trained several classifiers!
         # here we can do it by filling in the votes vector with weighted votes
         # ==========================
-        
+        for a in range(Ncomps):
+            h = classifiers[a].classify(X)
+            for i in range(Npts):
+                votes[b, h[b]] += alphas[a]
         # ==========================
 
         # one way to compute yPred after accumulating the votes
